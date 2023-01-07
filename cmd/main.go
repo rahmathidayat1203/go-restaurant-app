@@ -6,6 +6,7 @@ import (
 	"github.com/rahmathidayat1203/go-restaurant-app/internal/delivery/rest"
 	mRepo "github.com/rahmathidayat1203/go-restaurant-app/internal/repository/menu"
 	oRepo "github.com/rahmathidayat1203/go-restaurant-app/internal/repository/order"
+	uRepo "github.com/rahmathidayat1203/go-restaurant-app/internal/repository/user"
 	rUsecase "github.com/rahmathidayat1203/go-restaurant-app/internal/usecase/resto"
 )
 
@@ -15,11 +16,15 @@ const (
 
 func main() {
 	e := echo.New()
-
+	secret := "AES256Key-32Characters1234567890"
 	db := database.GetDB(dsn)
 	menuRepo := mRepo.GetRepository(db)
 	orderRepo := oRepo.GetRepository(db)
-	restoUsecase := rUsecase.GetUseCase(menuRepo, orderRepo)
+	userRepo, err := uRepo.GetRepository(db, secret, 1, 64*1024, 4, 32)
+	if err != nil {
+		panic(err)
+	}
+	restoUsecase := rUsecase.GetUseCase(menuRepo, orderRepo, userRepo)
 	h := rest.NewHandler(restoUsecase)
 
 	rest.LoadMiddleware(e)
