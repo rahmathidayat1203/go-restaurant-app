@@ -2,29 +2,30 @@ package database
 
 import (
 	"github.com/rahmathidayat1203/go-restaurant-app/internal/model"
-	"github.com/rahmathidayat1203/go-restaurant-app/internal/model/constant"
+	"github.com/rahmathidayat1203/go-restaurant-app/internal/model/constants"
 	"gorm.io/gorm"
 )
 
 func seedDB(db *gorm.DB) {
+	db.AutoMigrate(&model.MenuItem{}, &model.Order{}, &model.ProductOrder{})
 	drinkMenu := []model.MenuItem{
 		{
 			Name:      "Es teh",
 			OrderCode: "es_teh",
 			Price:     5000,
-			Type:      constant.MenuTypeDrink,
+			Type:      constants.MenuTypeDrink,
 		},
 		{
 			Name:      "Es Jeruk",
 			OrderCode: "es_jeruk",
 			Price:     5000,
-			Type:      constant.MenuTypeDrink,
+			Type:      constants.MenuTypeDrink,
 		},
 		{
 			Name:      "Jus Mangga",
 			OrderCode: "jus_mangga",
 			Price:     5000,
-			Type:      constant.MenuTypeDrink,
+			Type:      constants.MenuTypeDrink,
 		},
 	}
 
@@ -33,13 +34,13 @@ func seedDB(db *gorm.DB) {
 			Name:      "Bakmie",
 			OrderCode: "bakmie",
 			Price:     37500,
-			Type:      constant.MenuTypeFood,
+			Type:      constants.MenuTypeFood,
 		},
 		{
 			Name:      "Ayam Rica Rica",
 			OrderCode: "ayam_rica_rica",
 			Price:     41250,
-			Type:      constant.MenuTypeFood,
+			Type:      constants.MenuTypeFood,
 		},
 	}
 

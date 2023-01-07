@@ -1,6 +1,7 @@
 package constants
 
 
+type MenuType string
 
 const (
 	MenuTypeFood  = "food"

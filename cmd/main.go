@@ -5,6 +5,7 @@ import (
 	"github.com/rahmathidayat1203/go-restaurant-app/internal/database"
 	"github.com/rahmathidayat1203/go-restaurant-app/internal/delivery/rest"
 	mRepo "github.com/rahmathidayat1203/go-restaurant-app/internal/repository/menu"
+	oRepo "github.com/rahmathidayat1203/go-restaurant-app/internal/repository/order"
 	rUsecase "github.com/rahmathidayat1203/go-restaurant-app/internal/usecase/resto"
 )
 
@@ -17,8 +18,11 @@ func main() {
 
 	db := database.GetDB(dsn)
 	menuRepo := mRepo.GetRepository(db)
-	restoUsecase := rUsecase.GetUseCase(menuRepo)
+	orderRepo := oRepo.GetRepository(db)
+	restoUsecase := rUsecase.GetUseCase(menuRepo, orderRepo)
 	h := rest.NewHandler(restoUsecase)
+
+	rest.LoadMiddleware(e)
 	rest.LoadRoutes(e, h)
 	e.Logger.Fatal(e.Start(":14045"))
 }
