@@ -3,21 +3,25 @@ package user
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rsa"
+	"time"
 
 	"github.com/rahmathidayat1203/go-restaurant-app/internal/model"
 	"gorm.io/gorm"
 )
 
 type userRepo struct {
-	db      *gorm.DB
-	gcm     cipher.AEAD
-	time    uint32
-	memory  uint32
-	threads uint8
-	keyLen  uint32
+	db        *gorm.DB
+	gcm       cipher.AEAD
+	time      uint32
+	memory    uint32
+	threads   uint8
+	keyLen    uint32
+	signKey   *rsa.PrivateKey
+	accessExp time.Duration
 }
 
-func GetRepository(db *gorm.DB, secret string, time uint32, memory uint32, threads uint8, keyLen uint32) (Repository, error) {
+func GetRepository(db *gorm.DB, secret string, time uint32, memory uint32, threads uint8, keyLen uint32, signKey *rsa.PrivateKey, accessExp time.Duration) (Repository, error) {
 	block, err := aes.NewCipher([]byte(secret))
 
 	if err != nil {
@@ -28,12 +32,14 @@ func GetRepository(db *gorm.DB, secret string, time uint32, memory uint32, threa
 		return nil, err
 	}
 	return &userRepo{
-		db:      db,
-		gcm:     gcm,
-		time:    time,
-		memory:  memory,
-		threads: threads,
-		keyLen:  keyLen,
+		db:        db,
+		gcm:       gcm,
+		time:      time,
+		memory:    memory,
+		threads:   threads,
+		keyLen:    keyLen,
+		signKey:   signKey,
+		accessExp: accessExp,
 	}, nil
 }
 func (ur *userRepo) RegisterUser(userData model.User) (model.User, error) {
@@ -55,4 +61,27 @@ func (ur *userRepo) CheckRegister(username string) (bool, error) {
 	}
 
 	return userData.ID != "", nil
+}
+
+func (ur *userRepo) GetUserData(username string) (model.User, error) {
+	var userData model.User
+
+	if err := ur.db.Where(model.User{Username: username}).First(&userData).Error; err != nil {
+		return userData, err
+	}
+
+	return userData, nil
+}
+
+func (ur *userRepo) VerifyingUser(username, password string, userData model.User) (bool, error) {
+	if username != userData.Username {
+		return false, nil
+	}
+	verified, err := ur.comparePassword(password, userData.Hash)
+
+	if err != nil {
+		return false, err
+	}
+
+	return verified, nil
 }
